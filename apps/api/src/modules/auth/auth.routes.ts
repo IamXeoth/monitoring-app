@@ -79,4 +79,33 @@ export async function authRoutes(fastify: FastifyInstance) {
       message: 'Logout realizado com sucesso',
     });
   });
+
+  // POST /auth/test-email - Testar configuração de email
+  fastify.post(
+    '/auth/test-email',
+    { preHandler: authMiddleware },
+    async (request, reply) => {
+      try {
+        const { EmailService } = await import('../../shared/email/email.service');
+        const emailService = new EmailService();
+        
+        const user = await authService.getProfile(request.userId);
+        const success = await emailService.sendTestEmail(user.email);
+
+        if (success) {
+          return reply.send({
+            message: 'Email de teste enviado com sucesso',
+          });
+        } else {
+          return reply.status(500).send({
+            error: 'Erro ao enviar email de teste',
+          });
+        }
+      } catch (error: any) {
+        return reply.status(500).send({
+          error: error.message || 'Erro ao enviar email de teste',
+        });
+      }
+    }
+  );
 }

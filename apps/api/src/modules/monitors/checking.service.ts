@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { prisma } from '../../shared/database/prisma';
+import { EmailService } from '../../shared/email/email.service';
 
 export interface CheckResult {
   status: 'UP' | 'DOWN' | 'DEGRADED';
@@ -9,6 +10,12 @@ export interface CheckResult {
 }
 
 export class CheckingService {
+  private emailService: EmailService;
+
+  constructor() {
+    this.emailService = new EmailService();
+  }
+
   async checkMonitor(monitorId: string): Promise<CheckResult> {
     const monitor = await prisma.monitor.findUnique({
       where: { id: monitorId },
@@ -92,6 +99,16 @@ export class CheckingService {
   }
 
   private async handleIncident(monitorId: string, result: CheckResult) {
+    // Buscar monitor com informações do usuário
+    const monitor = await prisma.monitor.findUnique({
+      where: { id: monitorId },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!monitor) return;
+
     // Buscar último incident aberto
     const openIncident = await prisma.incident.findFirst({
       where: {
@@ -104,7 +121,7 @@ export class CheckingService {
     });
 
     if (result.status === 'DOWN') {
-      // Se não existe incident aberto, criar um novo
+      // Se não existe incident aberto, criar um novo E enviar email
       if (!openIncident) {
         await prisma.incident.create({
           data: {
@@ -116,17 +133,37 @@ export class CheckingService {
             errorMessage: result.errorMessage,
           },
         });
+
+        // Enviar email de alerta DOWN
+        await this.emailService.sendMonitorDownAlert(
+          monitor.user.email,
+          monitor.name,
+          monitor.url,
+          result.errorMessage
+        );
       }
     } else {
-      // Se está UP e tem incident aberto, resolver
+      // Se está UP e tem incident aberto, resolver E enviar email
       if (openIncident) {
+        const resolvedAt = new Date();
+        const downtimeMs = resolvedAt.getTime() - new Date(openIncident.startedAt).getTime();
+        const downtimeMinutes = Math.round(downtimeMs / 1000 / 60);
+
         await prisma.incident.update({
           where: { id: openIncident.id },
           data: {
             status: 'UP',
-            resolvedAt: new Date(),
+            resolvedAt,
           },
         });
+
+        // Enviar email de alerta UP
+        await this.emailService.sendMonitorUpAlert(
+          monitor.user.email,
+          monitor.name,
+          monitor.url,
+          downtimeMinutes
+        );
       }
     }
   }
