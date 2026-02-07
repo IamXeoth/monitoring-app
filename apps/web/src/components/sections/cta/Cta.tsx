@@ -1,19 +1,16 @@
+import { Logo } from "@/components/Logo";
+
 export function CTA() {
   return (
     <section className="pt-12 pb-20 bg-[#f3f2f1]">
       <div className="container mx-auto px-6">
         <div className="max-w-6xl mx-auto">
           {/* Card Principal */}
-          <div className="bg-slate-900 rounded-3xl px-12 py-14 md:px-24 md:py-16 text-center relative overflow-hidden border border-slate-800/50">
-            {/* Badge no topo */}
+          <div className="bg-[#18181B] rounded-3xl px-12 py-14 md:px-24 md:py-16 text-center relative overflow-hidden border border-slate-800/50">
+            {/* Logo no topo */}
             <div className="flex justify-center mb-8">
               <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.08] border border-white/[0.12] backdrop-blur-sm">
-                <div className="w-4 h-4 bg-primary/20 rounded-md flex items-center justify-center">
-                  <span className="text-[10px]">🦎</span>
-                </div>
-                <span className="text-xs font-medium text-white/90 tracking-wide">
-                  Use Lagarto
-                </span>
+                <Logo />
               </div>
             </div>
 

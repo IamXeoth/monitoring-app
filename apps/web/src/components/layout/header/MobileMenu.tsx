@@ -6,9 +6,9 @@ import { useSmoothScroll } from './useSmoothScroll'
 
 const navLinks = [
   { href: '/#features', label: 'Recursos' },
-  { href: '/#pricing', label: 'Preços' },
+  { href: '/pricing', label: 'Preços' },
   { href: '/#faq', label: 'FAQ' },
-  { href: '#', label: 'Changelog' },
+  { href: '/changelog', label: 'Changelog' },
 ];
 
 export function MobileMenu() {
@@ -16,7 +16,10 @@ export function MobileMenu() {
   const { handleClick } = useSmoothScroll();
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    handleClick(e, href);
+    // Só usa smooth scroll para âncoras (#)
+    if (href.startsWith('/#')) {
+      handleClick(e, href);
+    }
     setIsOpen(false);
   };
 

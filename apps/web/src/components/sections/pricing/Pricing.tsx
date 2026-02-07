@@ -77,7 +77,7 @@ export function Pricing() {
       name: 'BUSINESS',
       description: 'Para equipes e operações de larga escala.',
       monthlyPrice: 70,
-      ctaText: 'Falar com vendas',
+      ctaText: 'Agendar demonstração',
       ctaVariant: 'secondary' as const,
       features: [
         { text: 'Até 50 monitores', available: true },

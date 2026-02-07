@@ -53,9 +53,9 @@ export function FAQ() {
 
   const faqs = [
     {
-      question: 'Como funciona o monitoramento do Lagarto?',
+      question: 'Como funciona o monitoramento do TheAlert?',
       answer:
-        'O Lagarto verifica seus sites e APIs em intervalos regulares (de 30 segundos a 5 minutos, dependendo do plano). Quando detectamos que seu serviço está fora do ar ou respondendo com erro, enviamos alertas instantâneos por email e outros canais configurados.',
+        'O TheAlert verifica seus sites e APIs em intervalos regulares (de 30 segundos a 5 minutos, dependendo do plano). Quando detectamos que seu serviço está fora do ar ou respondendo com erro, enviamos alertas instantâneos por email e outros canais configurados.',
     },
     {
       question: 'Posso monitorar APIs além de websites?',
@@ -80,7 +80,7 @@ export function FAQ() {
     {
       question: 'Posso testar antes de assinar?',
       answer:
-        'Com certeza! Nosso plano FREE é perfeito para testar o Lagarto sem compromisso. Você tem acesso a recursos essenciais de monitoramento e pode fazer upgrade a qualquer momento se precisar de mais funcionalidades.',
+        'Com certeza! Nosso plano FREE é perfeito para testar o TheAlert sem compromisso. Você tem acesso a recursos essenciais de monitoramento e pode fazer upgrade a qualquer momento se precisar de mais funcionalidades.',
     },
     {
       question: 'Qual a diferença entre os planos PRO e BUSINESS?',
@@ -128,7 +128,7 @@ export function FAQ() {
             </p>
             <a
               href="#contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-normal text-sm hover:bg-slate-800 transition-colors border-2 border-slate-900"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#18181B] text-white rounded-xl font-medium text-sm hover:bg-[#18181B]/90 transition-colors border-2 border-[#18181B]"
             >
               Falar com o suporte
               <svg

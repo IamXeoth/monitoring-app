@@ -27,9 +27,9 @@ export function PricingCard({
   popular = false,
 }: PricingCardProps) {
   const ctaStyles = {
-    default: 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50',
+    default: 'bg-white border-2 border-slate-200 text-slate-900 hover:border-slate-900',
     primary: 'bg-primary border-2 border-primary text-white hover:bg-primary/90',
-    secondary: 'bg-slate-900 border-2 border-slate-900 text-white hover:bg-slate-800',
+    secondary: 'bg-[#18181B] border-2 border-[#18181B] text-white hover:bg-[#18181B]/90',
   };
 
   return (
@@ -52,7 +52,7 @@ export function PricingCard({
       {/* Badge do plano */}
       <div className="mb-6">
         <div className="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 bg-white">
-          <span className="text-xs font-normal text-slate-700">{name}</span>
+          <span className="text-xs font-medium text-slate-700">{name}</span>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export function PricingCard({
               R$ {originalPrice}
             </span>
           )}
-          <span className="text-4xl font-normal text-slate-900 tabular-nums">
+          <span className="text-4xl font-semibold text-slate-900 tabular-nums">
             {price === 0 ? 'R$ 0' : `R$ ${price}`}
           </span>
           <span className="text-slate-500 text-xs font-normal ml-1">BRL</span>
@@ -81,7 +81,7 @@ export function PricingCard({
 
       {/* CTA */}
       <button
-        className={`w-full py-2.5 px-6 rounded-xl font-normal text-sm transition-all duration-200 mb-6 ${ctaStyles[ctaVariant]}`}
+        className={`w-full py-2.5 px-6 rounded-xl font-medium text-sm transition-all duration-200 mb-6 ${ctaStyles[ctaVariant]}`}
       >
         {ctaText}
       </button>

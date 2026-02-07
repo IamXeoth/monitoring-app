@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { LogoHero } from "./LogoHero";
 
 export function Hero() {
   return (
@@ -15,7 +16,7 @@ export function Hero() {
             <FadeIn delay={100}>
               <Link 
                 href="/blog/announcing-beta" 
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 hover:border-slate-300 transition-colors group mb-8"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 hover:border-slate-300 transition-colors group mb-6"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                 <span className="text-xs font-medium text-slate-700">Versão Beta</span>
@@ -23,8 +24,15 @@ export function Hero() {
               </Link>
             </FadeIn>
 
-            {/* Main Heading */}
+            {/* Logo Hero - Animado (alinhado com headline) */}
             <FadeIn delay={200}>
+              <div className="mb-8">
+                <LogoHero />
+              </div>
+            </FadeIn>
+
+            {/* Main Heading */}
+            <FadeIn delay={300}>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.1] tracking-tight text-slate-900 mb-6 max-w-4xl">
                 Monitore seus sites
                 <br />
@@ -33,7 +41,7 @@ export function Hero() {
             </FadeIn>
 
             {/* Description */}
-            <FadeIn delay={400}>
+            <FadeIn delay={450}>
               <p className="text-base leading-relaxed text-slate-600 max-w-[500px] mb-8 font-normal">
                 A plataforma completa de monitoramento
                 de uptime feita para empresas que valorizam
@@ -64,7 +72,7 @@ export function Hero() {
             </FadeIn>
 
             {/* Social Proof */}
-            <FadeIn delay={800}>
+            <FadeIn delay={750}>
               <Link href="#about" className="inline-flex items-center gap-2 group cursor-pointer">
                 <span className="text-sm font-medium text-slate-700">
                   Feito por brasileiros, para brasileiros

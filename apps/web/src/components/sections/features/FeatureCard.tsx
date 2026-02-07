@@ -33,7 +33,7 @@ export function FeatureCard({
               {icon}
             </div>
           )}
-          <h3 className="text-lg font-semibold text-slate-900 leading-tight tracking-tight pr-16">
+          <h3 className={`text-lg font-semibold text-slate-900 leading-tight tracking-tight ${badge ? 'pr-16' : ''}`}>
             {title}
           </h3>
         </div>

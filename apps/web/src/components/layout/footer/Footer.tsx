@@ -10,14 +10,14 @@ export function Footer() {
     <footer className="bg-[#e7e6e4] pt-20 pb-8">
       <div className="container mx-auto px-6">
         {/* CTA Section */}
-        <div className="flex items-center justify-between mb-20 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-20 max-w-7xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 max-w-2xl">
             Comece a monitorar seus serviços hoje
           </h2>
           <a
             href="#pricing"
             onClick={(e) => handleClick(e, '#pricing')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-normal text-sm hover:bg-slate-800 transition-colors border-2 border-slate-900 flex-shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#18181B] text-white rounded-xl font-medium text-sm hover:bg-[#18181B]/90 transition-colors border-2 border-[#18181B] flex-shrink-0 cursor-pointer"
           >
             <svg
               className="w-4 h-4"
@@ -55,9 +55,8 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#pricing"
-                  onClick={(e) => handleClick(e, '#pricing')}
-                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-normal cursor-pointer"
+                  href="/pricing"
+                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-normal"
                 >
                   Preços
                 </a>
@@ -72,7 +71,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/changelog"
                   className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-normal"
                 >
                   Changelog
@@ -134,10 +133,10 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="#"
+                  href="/about"
                   className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-normal"
                 >
-                  Sobre nós
+                  Sobre Nós
                 </a>
               </li>
               <li>
@@ -150,18 +149,18 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/privacy"
                   className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-normal"
                 >
-                  Blog
+                  Privacidade
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/terms"
                   className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-normal"
                 >
-                  Privacidade
+                  Termos e Condições
                 </a>
               </li>
             </ul>
@@ -215,14 +214,17 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Logo e Copyright */}
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">L</span>
+              <div className="flex items-center gap-3">
+                {/* Logo TheAlert - 3 barras estáticas */}
+                <div className="flex items-center gap-1">
+                  <div className="w-1 h-5 rounded-full bg-slate-900"></div>
+                  <div className="w-1 h-5 rounded-full bg-slate-900"></div>
+                  <div className="w-1 h-5 rounded-full bg-slate-900"></div>
                 </div>
-                <span className="text-lg font-semibold text-slate-900">Lagarto</span>
+                <span className="text-lg font-semibold text-slate-900 tracking-tight">TheAlert</span>
               </div>
               <p className="text-sm text-slate-600 font-normal">
-                © {currentYear} Lagarto. Todos os direitos reservados.
+                © {currentYear} TheAlert. Todos os direitos reservados.
               </p>
             </div>
 

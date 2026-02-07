@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "./MobileMenu";
+import { Logo } from "@/components/Logo";
 import { useSmoothScroll } from './useSmoothScroll'
 
 const navLinks = [
   { href: "/#features", label: "Recursos" },
-  { href: "/#pricing", label: "Preços" },
+  { href: "/pricing", label: "Preços" },
   { href: "/#faq", label: "FAQ" },
-  { href: "#", label: "Changelog" },
+  { href: "/changelog", label: "Changelog" },
 ];
 
 export function Header() {
@@ -22,13 +23,13 @@ export function Header() {
           {/* Centered Container */}
           <div className="inline-flex items-center gap-1 px-1 py-1 rounded-[12px] border border-white/[0.08] dark:border-white/[0.15] bg-[#18181B]/95 dark:bg-[#18181B]/98 backdrop-blur-xl shadow-lg">
 
-            {/* Logo - Apenas ícone */}
+            {/* Logo - TheAlert animado */}
             <Link
               href="/"
               className="flex items-center group px-2 py-1.5 rounded-lg hover:bg-white/[0.06] transition-colors duration-200"
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/[0.08] transition-transform duration-200 group-hover:scale-105">
-                <span className="text-sm">🦎</span>
+              <div className="flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                <Logo />
               </div>
             </Link>
 
@@ -41,7 +42,12 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={(e) => handleClick(e, link.href)}
+                  onClick={(e) => {
+                    // Só usa smooth scroll para âncoras (#)
+                    if (link.href.startsWith('/#')) {
+                      handleClick(e, link.href);
+                    }
+                  }}
                   className="text-[13px] font-medium text-white/80 hover:text-white hover:bg-white/[0.06] px-3 py-1.5 rounded-lg transition-all duration-200"
                 >
                   {link.label}

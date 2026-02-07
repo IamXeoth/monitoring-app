@@ -6,7 +6,7 @@ export function TrustedBy() {
         {/* Título */}
         <div className="text-center mb-8">
           <p className="text-sm font-medium text-slate-600">
-            Mais de 500+ empresas confiam no Lagarto
+            Mais de 500+ empresas confiam no TheAlert
           </p>
         </div>
 

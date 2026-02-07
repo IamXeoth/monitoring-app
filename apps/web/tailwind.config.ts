@@ -23,9 +23,14 @@ const config: Config = {
           '50%': { transform: 'translateY(-4px)' },
           '100%': { transform: 'translateY(0)' },
         },
+        'scroll': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'brush-stroke': 'brush-stroke 0.6s ease-in-out',
+        'scroll': 'scroll 40s linear infinite',
       },
     },
   },
