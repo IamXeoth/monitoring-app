@@ -157,7 +157,7 @@ export default function DashboardPage() {
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
-  const formatUptime = (createdAt: Date) => {
+  const formatUptime = (createdAt: string) => {
     const now = new Date();
     const diff = now.getTime() - new Date(createdAt).getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));

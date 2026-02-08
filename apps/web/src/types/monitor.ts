@@ -3,9 +3,10 @@ export interface Monitor {
   userId: string;
   name: string;
   url: string;
-  type: 'HTTP' | 'HTTPS' | 'SSL' | 'DOMAIN' | 'PING';
+  checkType: 'HTTP' | 'HTTPS' | 'SSL' | 'DOMAIN' | 'PING';
   interval: number;
   isActive: boolean;
+  lastChecked?: string | null;
   createdAt: string;
   updatedAt: string;
   // Campos adicionais que vamos buscar

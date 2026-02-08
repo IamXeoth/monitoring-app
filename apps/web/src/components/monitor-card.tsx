@@ -52,13 +52,13 @@ export function MonitorCard({ monitor, onEdit, onDelete, onToggle }: MonitorCard
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">{getTypeIcon(monitor.type)}</span>
+              <span className="text-2xl">{getTypeIcon(monitor.checkType)}</span>
               <h3 className="text-lg font-semibold">{monitor.name}</h3>
               {getStatusBadge()}
             </div>
             <p className="text-sm text-muted-foreground mb-2">{monitor.url}</p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span>Tipo: {monitor.type}</span>
+              <span>Tipo: {monitor.checkType}</span>
               <span>•</span>
               <span>Intervalo: {formatInterval(monitor.interval)}</span>
               {monitor.stats && (
