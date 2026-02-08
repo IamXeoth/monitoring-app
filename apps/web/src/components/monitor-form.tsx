@@ -52,26 +52,36 @@ export function MonitorForm({ monitor, onSubmit, onCancel }: MonitorFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        <div className="rounded-lg bg-[#ef4444]/10 border border-[#ef4444]/20 p-4">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-[#ef4444] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-[#ef4444]">{error}</p>
+          </div>
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="name">Nome do Monitor</Label>
+        <Label htmlFor="name" className="text-[#f3f2f1] text-sm font-medium">
+          Nome do Monitor
+        </Label>
         <Input
           id="name"
           placeholder="Ex: Site Principal"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          className="bg-[#0b0c10] border-[#27272a] text-[#f3f2f1] placeholder-[#71717a] focus:border-[#f3f2f1]/30 focus:ring-[#f3f2f1]/20 rounded-lg"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="url">URL para Monitorar</Label>
+        <Label htmlFor="url" className="text-[#f3f2f1] text-sm font-medium">
+          URL para Monitorar
+        </Label>
         <Input
           id="url"
           type="url"
@@ -79,47 +89,75 @@ export function MonitorForm({ monitor, onSubmit, onCancel }: MonitorFormProps) {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
+          className="bg-[#0b0c10] border-[#27272a] text-[#f3f2f1] placeholder-[#71717a] focus:border-[#f3f2f1]/30 focus:ring-[#f3f2f1]/20 rounded-lg font-mono text-sm"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="type">Tipo de Monitor</Label>
+        <Label htmlFor="type" className="text-[#f3f2f1] text-sm font-medium">
+          Tipo de Monitor
+        </Label>
         <Select
           id="type"
           value={type}
           onChange={(e) => setType(e.target.value as CreateMonitorInput['type'])}
+          className="bg-[#0b0c10] border-[#27272a] text-[#f3f2f1] focus:border-[#f3f2f1]/30 focus:ring-[#f3f2f1]/20 rounded-lg"
         >
-          <option value="HTTP">HTTP</option>
-          <option value="HTTPS">HTTPS</option>
-          <option value="SSL">SSL Certificate</option>
-          <option value="DOMAIN">Domain</option>
-          <option value="PING">Ping</option>
+          <option value="HTTP" className="bg-[#1a1b1e]">HTTP</option>
+          <option value="HTTPS" className="bg-[#1a1b1e]">HTTPS</option>
+          <option value="SSL" className="bg-[#1a1b1e]">SSL Certificate</option>
+          <option value="DOMAIN" className="bg-[#1a1b1e]">Domain</option>
+          <option value="PING" className="bg-[#1a1b1e]">Ping</option>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="interval">Intervalo de Checagem</Label>
+        <Label htmlFor="interval" className="text-[#f3f2f1] text-sm font-medium">
+          Intervalo de Checagem
+        </Label>
         <Select
           id="interval"
           value={interval}
           onChange={(e) => setInterval(Number(e.target.value))}
+          className="bg-[#0b0c10] border-[#27272a] text-[#f3f2f1] focus:border-[#f3f2f1]/30 focus:ring-[#f3f2f1]/20 rounded-lg"
         >
           {availableIntervals.map((int) => (
-            <option key={int} value={int}>
+            <option key={int} value={int} className="bg-[#1a1b1e]">
               {formatInterval(int)}
             </option>
           ))}
         </Select>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-[#71717a] flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           Plano FREE permite apenas checagens a cada 5 minutos
         </p>
       </div>
 
-      <div className="flex gap-2 pt-4">
-        <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? 'Salvando...' : monitor ? 'Atualizar Monitor' : 'Criar Monitor'}
+      <div className="flex gap-3 pt-4">
+        <Button 
+          type="submit" 
+          disabled={loading} 
+          className="flex-1 bg-[#f3f2f1] hover:bg-[#e5e4e2] text-[#18181B] font-medium rounded-lg disabled:opacity-50"
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Salvando...
+            </span>
+          ) : (
+            monitor ? 'Atualizar Monitor' : 'Criar Monitor'
+          )}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button 
+          type="button" 
+          onClick={onCancel}
+          className="bg-transparent border border-[#27272a] text-[#a1a1aa] hover:text-[#f3f2f1] hover:bg-[#27272a]/30 rounded-lg"
+        >
           Cancelar
         </Button>
       </div>
