@@ -45,6 +45,15 @@ export class CheckingService {
     // Salvar check no banco
     await this.saveCheck(monitorId, result);
 
+    // Atualizar lastChecked e status do monitor
+    await prisma.monitor.update({
+      where: { id: monitorId },
+      data: {
+        lastChecked: new Date(),
+        status: result.status === 'UP' ? 'UP' : 'DOWN',
+      },
+    });
+
     // Verificar se precisa criar/resolver incident
     await this.handleIncident(monitorId, result);
 
@@ -71,12 +80,10 @@ export class CheckingService {
   }
 
   private async checkPing(url: string): Promise<CheckResult> {
-    // Simplificado: fazer HTTP request
     return this.checkHttp(url);
   }
 
   private async checkSsl(url: string): Promise<CheckResult> {
-    // Simplificado: verificar se HTTPS responde
     return this.checkHttp(url.replace('http://', 'https://'));
   }
 
@@ -85,10 +92,10 @@ export class CheckingService {
       data: {
         monitorId,
         status: result.status,
-        statusCode: result.statusCode,
+        statusCode: result.statusCode ?? null,
         responseTime: result.responseTime,
         isUp: result.status === 'UP',
-        errorMessage: result.errorMessage,
+        errorMessage: result.errorMessage ?? null,
         checkedAt: new Date(),
       },
     });
@@ -122,7 +129,7 @@ export class CheckingService {
         await prisma.incident.create({
           data: {
             monitorId,
-            severity: 'HIGH',
+            severity: 'DOWN',
             title: `${monitor.name} está DOWN`,
             description: result.errorMessage || 'Monitor fora do ar',
             startedAt: new Date(),
@@ -131,46 +138,51 @@ export class CheckingService {
         });
 
         // Enviar email de alerta DOWN
-        await emailService.sendMonitorDownAlert(monitor.user.email, {
-          monitorName: monitor.name,
-          monitorUrl: monitor.url,
-          status: 'DOWN',
-          timestamp: new Date(),
-          userName: monitor.user.name,
-          errorMessage: result.errorMessage,
-        });
+        try {
+          await emailService.sendMonitorDownAlert(monitor.user.email, {
+            monitorName: monitor.name,
+            monitorUrl: monitor.url,
+            status: 'DOWN',
+            timestamp: new Date(),
+            userName: monitor.user.name,
+            errorMessage: result.errorMessage,
+          });
+        } catch (emailError) {
+          console.error('[CheckingService] Erro ao enviar email DOWN:', emailError);
+        }
       }
     } else {
       // Se está UP e tem incident aberto, resolver E enviar email
       if (openIncident) {
         const resolvedAt = new Date();
-        const downtimeMs = resolvedAt.getTime() - new Date(openIncident.startedAt).getTime();
-        const downtimeMinutes = Math.round(downtimeMs / 1000 / 60);
 
         await prisma.incident.update({
           where: { id: openIncident.id },
           data: {
-            severity: 'LOW',
+            severity: 'UP',
             resolvedAt,
             isResolved: true,
           },
         });
 
         // Enviar email de alerta UP
-        await emailService.sendMonitorUpAlert(monitor.user.email, {
-          monitorName: monitor.name,
-          monitorUrl: monitor.url,
-          status: 'UP',
-          timestamp: resolvedAt,
-          userName: monitor.user.name,
-          responseTime: result.responseTime,
-        });
+        try {
+          await emailService.sendMonitorUpAlert(monitor.user.email, {
+            monitorName: monitor.name,
+            monitorUrl: monitor.url,
+            status: 'UP',
+            timestamp: resolvedAt,
+            userName: monitor.user.name,
+            responseTime: result.responseTime,
+          });
+        } catch (emailError) {
+          console.error('[CheckingService] Erro ao enviar email UP:', emailError);
+        }
       }
     }
   }
 
   async getMonitorStatus(monitorId: string): Promise<'UP' | 'DOWN' | 'UNKNOWN'> {
-    // Buscar último check
     const lastCheck = await prisma.check.findFirst({
       where: { monitorId },
       orderBy: { checkedAt: 'desc' },
@@ -182,7 +194,6 @@ export class CheckingService {
   }
 
   async getMonitorStats(monitorId: string) {
-    // Últimos 100 checks
     const checks = await prisma.check.findMany({
       where: { monitorId },
       orderBy: { checkedAt: 'desc' },
@@ -193,16 +204,18 @@ export class CheckingService {
     const totalChecks = checks.length;
     const uptime = totalChecks > 0 ? (upChecks / totalChecks) * 100 : 0;
 
+    // Handle nullable responseTime safely
+    const checksWithResponseTime = checks.filter((c) => c.responseTime != null);
     const avgResponseTime =
-      checks.length > 0
-        ? checks.reduce((sum, c) => sum + c.responseTime, 0) / checks.length
+      checksWithResponseTime.length > 0
+        ? checksWithResponseTime.reduce((sum, c) => sum + (c.responseTime ?? 0), 0) / checksWithResponseTime.length
         : 0;
 
     return {
       uptime: uptime.toFixed(2),
       avgResponseTime: Math.round(avgResponseTime),
       totalChecks,
-      lastCheck: checks[0],
+      lastCheck: checks[0] ?? null,
     };
   }
 }

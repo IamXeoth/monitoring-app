@@ -8,24 +8,24 @@ export interface EmailOptions {
 export interface MonitorAlertEmail {
   monitorName: string;
   monitorUrl: string;
-  status: 'UP' | 'DOWN';
+  status: 'UP' | 'DOWN' | 'DEGRADED';
   timestamp: Date;
   userName: string;
-  responseTime?: number;
   errorMessage?: string;
+  responseTime?: number;
 }
 
 export interface DailyReportEmail {
-  userName: string;
   date: Date;
   totalMonitors: number;
   upMonitors: number;
   downMonitors: number;
   avgUptime: number;
-  monitors: Array<{
+  monitors?: {
     name: string;
     url: string;
     uptime: number;
     avgResponseTime: number;
-  }>;
+    status: 'UP' | 'DOWN';
+  }[];
 }

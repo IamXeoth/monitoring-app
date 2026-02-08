@@ -4,7 +4,6 @@ import type { CreateMonitorInput, UpdateMonitorInput } from './monitors.schemas'
 
 export class MonitorsService {
   async create(userId: string, data: CreateMonitorInput) {
-    // Buscar plano do usuário
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -20,21 +19,19 @@ export class MonitorsService {
     const plan = user.subscription?.plan || 'FREE';
     const limits = getPlanLimits(plan);
 
-    // Verificar limite de monitores
     if (user.monitors.length >= limits.maxMonitors) {
       throw new Error(
         `Limite de ${limits.maxMonitors} monitores atingido para o plano ${plan}`
       );
     }
 
-    // Verificar intervalo mínimo
     if (!validateInterval(plan, data.interval)) {
       throw new Error(
         `Intervalo mínimo para o plano ${plan} é ${limits.minInterval} segundos`
       );
     }
 
-    // Criar monitor
+    // Prisma usa 'checkType' no model que mapeia para 'type' no banco
     const monitor = await prisma.monitor.create({
       data: {
         userId,
@@ -62,7 +59,7 @@ export class MonitorsService {
     const monitor = await prisma.monitor.findFirst({
       where: {
         id: monitorId,
-        userId, // Garantir que só pode ver seus próprios monitores
+        userId,
       },
       include: {
         _count: {
@@ -82,7 +79,6 @@ export class MonitorsService {
   }
 
   async update(userId: string, monitorId: string, data: UpdateMonitorInput) {
-    // Verificar se o monitor pertence ao usuário
     const existingMonitor = await prisma.monitor.findFirst({
       where: {
         id: monitorId,
@@ -94,7 +90,6 @@ export class MonitorsService {
       throw new Error('Monitor não encontrado');
     }
 
-    // Se está alterando o intervalo, validar
     if (data.interval !== undefined) {
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -111,13 +106,13 @@ export class MonitorsService {
       }
     }
 
-    // Atualizar monitor
+    // Separar 'type' do resto dos dados para mapear corretamente
     const { type, ...rest } = data;
     const monitor = await prisma.monitor.update({
       where: { id: monitorId },
       data: {
         ...rest,
-        ...(type ? { checkType: type } : {}),
+        ...(type !== undefined ? { checkType: type } : {}),
       },
     });
 
@@ -125,7 +120,6 @@ export class MonitorsService {
   }
 
   async delete(userId: string, monitorId: string) {
-    // Verificar se o monitor pertence ao usuário
     const existingMonitor = await prisma.monitor.findFirst({
       where: {
         id: monitorId,
@@ -137,7 +131,6 @@ export class MonitorsService {
       throw new Error('Monitor não encontrado');
     }
 
-    // Deletar monitor (cascade vai deletar checks e incidents)
     await prisma.monitor.delete({
       where: { id: monitorId },
     });

@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { CheckingService } from './checking.service';
 import { authMiddleware } from '../../shared/middlewares/auth.middleware';
 import { scheduleMonitorCheck } from './checking.queue';
+import { prisma } from '../../shared/database/prisma';
 
 export async function checkingRoutes(fastify: FastifyInstance) {
   const checkingService = new CheckingService();
@@ -46,7 +47,6 @@ export async function checkingRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
       
-      // Agendar check imediato
       await scheduleMonitorCheck(id, 0);
 
       return reply.send({
@@ -65,7 +65,8 @@ export async function checkingRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string };
       const { limit = '50' } = request.query as { limit?: string };
 
-      const checks = await fastify.prisma.check.findMany({
+      // Usar prisma importado diretamente (não fastify.prisma)
+      const checks = await prisma.check.findMany({
         where: { monitorId: id },
         orderBy: { checkedAt: 'desc' },
         take: Number(limit),
@@ -86,7 +87,8 @@ export async function checkingRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
 
-      const incidents = await fastify.prisma.incident.findMany({
+      // Usar prisma importado diretamente (não fastify.prisma)
+      const incidents = await prisma.incident.findMany({
         where: { monitorId: id },
         orderBy: { startedAt: 'desc' },
         take: 20,

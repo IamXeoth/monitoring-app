@@ -11,6 +11,9 @@ const checkingQueue = new Queue('monitor-checking', {
       type: 'exponential',
       delay: 5000,
     },
+    // Evita jobs duplicados com mesmo ID
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
   },
 });
 
@@ -35,7 +38,7 @@ const worker = new Worker(
   },
   {
     connection,
-    concurrency: 10, // Processar até 10 monitores em paralelo
+    concurrency: 10,
   }
 );
 
@@ -49,21 +52,24 @@ worker.on('failed', (job, err) => {
 
 // Função para adicionar monitor na fila
 export async function scheduleMonitorCheck(monitorId: string, delay = 0) {
+  const jobId = `check-${monitorId}-${Date.now()}`;
   await checkingQueue.add(
     'check',
     { monitorId },
     {
       delay,
-      jobId: `check-${monitorId}-${Date.now()}`,
+      jobId,
     }
   );
 }
+
+// Set para rastrear monitores já agendados neste ciclo
+const scheduledInCycle = new Set<string>();
 
 // Função para inicializar o scheduler
 export async function startCheckingScheduler() {
   console.log('[Scheduler] Starting monitor checking scheduler...');
 
-  // A cada 30 segundos, buscar monitores ativos e agendar checks
   setInterval(async () => {
     try {
       const monitors = await prisma.monitor.findMany({
@@ -79,18 +85,27 @@ export async function startCheckingScheduler() {
 
         const now = Date.now();
         const lastCheckTime = lastCheck ? new Date(lastCheck.checkedAt).getTime() : 0;
-        const timeSinceLastCheck = (now - lastCheckTime) / 1000; // em segundos
+        const timeSinceLastCheck = (now - lastCheckTime) / 1000;
 
         // Se passou o intervalo, agendar check
         if (timeSinceLastCheck >= monitor.interval) {
-          await scheduleMonitorCheck(monitor.id);
-          console.log(`[Scheduler] Scheduled check for monitor ${monitor.id} (${monitor.name})`);
+          // Evita agendar o mesmo monitor múltiplas vezes no mesmo ciclo
+          if (!scheduledInCycle.has(monitor.id)) {
+            await scheduleMonitorCheck(monitor.id);
+            scheduledInCycle.add(monitor.id);
+            console.log(`[Scheduler] Scheduled check for monitor ${monitor.id} (${monitor.name})`);
+
+            // Limpa do set após o intervalo do monitor
+            setTimeout(() => {
+              scheduledInCycle.delete(monitor.id);
+            }, monitor.interval * 1000);
+          }
         }
       }
     } catch (error) {
       console.error('[Scheduler] Error scheduling checks:', error);
     }
-  }, 30000); // Verificar a cada 30 segundos
+  }, 30000);
 
   console.log('[Scheduler] Scheduler started!');
 }
