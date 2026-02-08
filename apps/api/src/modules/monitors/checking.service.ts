@@ -23,11 +23,11 @@ export class CheckingService {
     let result: CheckResult;
 
     try {
-      if (monitor.type === 'HTTP' || monitor.type === 'HTTPS') {
+      if (monitor.checkType === 'HTTP' || monitor.checkType === 'HTTPS') {
         result = await this.checkHttp(monitor.url);
-      } else if (monitor.type === 'PING') {
+      } else if (monitor.checkType === 'PING') {
         result = await this.checkPing(monitor.url);
-      } else if (monitor.type === 'SSL') {
+      } else if (monitor.checkType === 'SSL') {
         result = await this.checkSsl(monitor.url);
       } else {
         result = await this.checkHttp(monitor.url);
