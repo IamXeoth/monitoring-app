@@ -6,6 +6,7 @@ export interface Monitor {
   type: 'HTTP' | 'HTTPS' | 'SSL' | 'DOMAIN' | 'PING';
   interval: number;
   isActive: boolean;
+  lastChecked?: string | null;
   createdAt: string;
   updatedAt: string;
   // Campos adicionais que vamos buscar

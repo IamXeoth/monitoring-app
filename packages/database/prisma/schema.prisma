@@ -75,7 +75,7 @@ model Monitor {
   userId      String
   name        String
   url         String
-  checkType   MonitorType    @default(HTTPS)
+  type        MonitorType    @default(HTTPS)
   interval    Int            @default(300) // segundos
   timeout     Int            @default(30) // segundos
   status      IncidentStatus @default(UP)
