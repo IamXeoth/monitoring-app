@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,116 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// USERS
-// ==========================================
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  monitors     Monitor[]
-  subscription Subscription?
-
-  @@map("users")
-}
-
-// ==========================================
-// MONITORS
-// ==========================================
-
-model Monitor {
-  id        String      @id @default(cuid())
-  userId    String
-  name      String
-  url       String
-  type      MonitorType
-  interval  Int
-  isActive  Boolean     @default(true)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  incidents Incident[]
-  checks    Check[]
-
-  @@index([userId])
-  @@map("monitors")
-}
-
-enum MonitorType {
-  HTTP
-  HTTPS
-  SSL
-  DOMAIN
-  PING
-}
-
-// ==========================================
-// CHECKS
-// ==========================================
-
-model Check {
-  id           String   @id @default(cuid())
-  monitorId    String
-  status       String
-  responseTime Int?
-  statusCode   Int?
-  checkedAt    DateTime @default(now())
-
-  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
-
-  @@index([monitorId, checkedAt])
-  @@map("checks")
-}
-
-// ==========================================
-// INCIDENTS
-// ==========================================
-
-model Incident {
-  id           String          @id @default(cuid())
-  monitorId    String
-  status       IncidentStatus
-  startedAt    DateTime        @default(now())
-  resolvedAt   DateTime?
-  responseTime Int?
-  statusCode   Int?
-  errorMessage String?
-
-  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
-
-  @@index([monitorId])
-  @@map("incidents")
-}
-
-enum IncidentStatus {
-  DOWN
-  UP
-  DEGRADED
-}
-
-// ==========================================
-// SUBSCRIPTIONS
-// ==========================================
-
-model Subscription {
-  id        String             @id @default(cuid())
-  userId    String             @unique
-  plan      Plan               @default(FREE)
-  status    SubscriptionStatus @default(ACTIVE)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("subscriptions")
-}
-
+// Enums (usando os nomes exatos do banco)
 enum Plan {
   FREE
   STARTER
@@ -128,4 +22,107 @@ enum SubscriptionStatus {
   ACTIVE
   CANCELLED
   PAST_DUE
+}
+
+enum MonitorType {
+  HTTP
+  HTTPS
+  SSL
+  DOMAIN
+  PING
+}
+
+enum IncidentStatus {
+  DOWN
+  UP
+  DEGRADED
+}
+
+// Model de usuário
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  subscription Subscription?
+  monitors     Monitor[]
+
+  @@map("users")
+}
+
+// Model de subscription (plano do usuário)
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String             @unique
+  plan      Plan               @default(FREE)
+  status    SubscriptionStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  // Relação
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// Model de monitor
+model Monitor {
+  id          String         @id @default(cuid())
+  userId      String
+  name        String
+  url         String
+  checkType   MonitorType    @default(HTTPS)
+  interval    Int            @default(300) // segundos
+  timeout     Int            @default(30) // segundos
+  status      IncidentStatus @default(UP)
+  isActive    Boolean        @default(true)
+  lastChecked DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relações
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checks    Check[]
+  incidents Incident[]
+
+  @@map("monitors")
+}
+
+// Model de check (resultado de cada verificação)
+model Check {
+  id           String   @id @default(cuid())
+  monitorId    String
+  statusCode   Int?
+  responseTime Int? // milissegundos
+  isUp         Boolean
+  errorMessage String?
+  checkedAt    DateTime @default(now())
+
+  // Relação
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, checkedAt])
+  @@map("checks")
+}
+
+// Model de incidente
+model Incident {
+  id          String         @id @default(cuid())
+  monitorId   String
+  severity    IncidentStatus @default(DOWN)
+  title       String
+  description String?
+  startedAt   DateTime       @default(now())
+  resolvedAt  DateTime?
+  isResolved  Boolean        @default(false)
+
+  // Relação
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, startedAt])
+  @@map("incidents")
 }

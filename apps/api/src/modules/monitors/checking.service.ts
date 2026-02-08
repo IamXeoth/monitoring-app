@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { prisma } from '../../shared/database/prisma';
-import { EmailService } from '../../shared/email/email.service';
+import { emailService } from '../../shared/email/email.service';
 
 export interface CheckResult {
   status: 'UP' | 'DOWN' | 'DEGRADED';
@@ -10,12 +10,6 @@ export interface CheckResult {
 }
 
 export class CheckingService {
-  private emailService: EmailService;
-
-  constructor() {
-    this.emailService = new EmailService();
-  }
-
   async checkMonitor(monitorId: string): Promise<CheckResult> {
     const monitor = await prisma.monitor.findUnique({
       where: { id: monitorId },
@@ -90,9 +84,10 @@ export class CheckingService {
     await prisma.check.create({
       data: {
         monitorId,
-        status: result.status,
-        responseTime: result.responseTime,
         statusCode: result.statusCode,
+        responseTime: result.responseTime,
+        isUp: result.status === 'UP',
+        errorMessage: result.errorMessage,
         checkedAt: new Date(),
       },
     });
@@ -113,7 +108,7 @@ export class CheckingService {
     const openIncident = await prisma.incident.findFirst({
       where: {
         monitorId,
-        resolvedAt: null,
+        isResolved: false,
       },
       orderBy: {
         startedAt: 'desc',
@@ -126,21 +121,23 @@ export class CheckingService {
         await prisma.incident.create({
           data: {
             monitorId,
-            status: 'DOWN',
+            severity: 'HIGH',
+            title: `${monitor.name} está DOWN`,
+            description: result.errorMessage || 'Monitor fora do ar',
             startedAt: new Date(),
-            responseTime: result.responseTime,
-            statusCode: result.statusCode,
-            errorMessage: result.errorMessage,
+            isResolved: false,
           },
         });
 
         // Enviar email de alerta DOWN
-        await this.emailService.sendMonitorDownAlert(
-          monitor.user.email,
-          monitor.name,
-          monitor.url,
-          result.errorMessage
-        );
+        await emailService.sendMonitorDownAlert(monitor.user.email, {
+          monitorName: monitor.name,
+          monitorUrl: monitor.url,
+          status: 'DOWN',
+          timestamp: new Date(),
+          userName: monitor.user.name,
+          errorMessage: result.errorMessage,
+        });
       }
     } else {
       // Se está UP e tem incident aberto, resolver E enviar email
@@ -152,18 +149,21 @@ export class CheckingService {
         await prisma.incident.update({
           where: { id: openIncident.id },
           data: {
-            status: 'UP',
+            severity: 'LOW',
             resolvedAt,
+            isResolved: true,
           },
         });
 
         // Enviar email de alerta UP
-        await this.emailService.sendMonitorUpAlert(
-          monitor.user.email,
-          monitor.name,
-          monitor.url,
-          downtimeMinutes
-        );
+        await emailService.sendMonitorUpAlert(monitor.user.email, {
+          monitorName: monitor.name,
+          monitorUrl: monitor.url,
+          status: 'UP',
+          timestamp: resolvedAt,
+          userName: monitor.user.name,
+          responseTime: result.responseTime,
+        });
       }
     }
   }
@@ -177,7 +177,7 @@ export class CheckingService {
 
     if (!lastCheck) return 'UNKNOWN';
 
-    return lastCheck.status === 'UP' ? 'UP' : 'DOWN';
+    return lastCheck.isUp ? 'UP' : 'DOWN';
   }
 
   async getMonitorStats(monitorId: string) {
@@ -188,7 +188,7 @@ export class CheckingService {
       take: 100,
     });
 
-    const upChecks = checks.filter((c) => c.status === 'UP').length;
+    const upChecks = checks.filter((c) => c.isUp).length;
     const totalChecks = checks.length;
     const uptime = totalChecks > 0 ? (upChecks / totalChecks) * 100 : 0;
 
