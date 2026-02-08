@@ -578,7 +578,7 @@ export default function DashboardPage() {
                                   {monitor.name}
                                 </h3>
                                 <span className="text-xs font-medium text-[#71717a] bg-[#18181B]/5 px-2 py-1 rounded">
-                                  {monitor.checkType}
+                                  {monitor.type}
                                 </span>
                                 {monitor.lastChecked && (
                                   <span className="text-xs text-[#71717a] flex items-center gap-1">
