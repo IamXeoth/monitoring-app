@@ -40,7 +40,7 @@ export class MonitorsService {
         userId,
         name: data.name,
         url: data.url,
-        type: data.type,
+        checkType: data.type,
         interval: data.interval,
         isActive: true,
       },
@@ -112,9 +112,13 @@ export class MonitorsService {
     }
 
     // Atualizar monitor
+    const { type, ...rest } = data;
     const monitor = await prisma.monitor.update({
       where: { id: monitorId },
-      data,
+      data: {
+        ...rest,
+        ...(type ? { checkType: type } : {}),
+      },
     });
 
     return monitor;
