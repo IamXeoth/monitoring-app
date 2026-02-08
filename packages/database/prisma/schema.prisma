@@ -96,6 +96,7 @@ model Monitor {
 model Check {
   id           String   @id @default(cuid())
   monitorId    String
+  status       String
   statusCode   Int?
   responseTime Int? // milissegundos
   isUp         Boolean

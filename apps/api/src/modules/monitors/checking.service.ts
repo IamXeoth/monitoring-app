@@ -84,6 +84,7 @@ export class CheckingService {
     await prisma.check.create({
       data: {
         monitorId,
+        status: result.status,
         statusCode: result.statusCode,
         responseTime: result.responseTime,
         isUp: result.status === 'UP',
