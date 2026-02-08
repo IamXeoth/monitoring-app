@@ -23,7 +23,7 @@ const PLAN_INTERVALS = {
 export function MonitorForm({ monitor, onSubmit, onCancel }: MonitorFormProps) {
   const [name, setName] = useState(monitor?.name || '');
   const [url, setUrl] = useState(monitor?.url || '');
-  const [type, setType] = useState<CreateMonitorInput['type']>(monitor?.type || 'HTTPS');
+  const [type, setType] = useState<CreateMonitorInput['type']>(monitor?.checkType || 'HTTPS');
   const [interval, setInterval] = useState(monitor?.interval || 300);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
