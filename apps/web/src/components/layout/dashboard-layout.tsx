@@ -4,16 +4,14 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Sidebar } from './sidebar';
-import { SidebarProvider, useSidebar } from './sidebar-context';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-function DashboardLayoutContent({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { isCollapsed } = useSidebar();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,41 +21,27 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0c10]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0c0d11]">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-2 h-8 rounded-full bg-[#22c55e] animate-pulse"></div>
-            <div className="w-2 h-8 rounded-full bg-[#22c55e] animate-pulse [animation-delay:0.2s]"></div>
-            <div className="w-2 h-8 rounded-full bg-[#22c55e] animate-pulse [animation-delay:0.4s]"></div>
+          <div className="inline-flex items-center gap-1.5 mb-4">
+            <div className="w-1.5 h-7 rounded-full bg-emerald-400/60 animate-pulse" />
+            <div className="w-1.5 h-7 rounded-full bg-amber-400/60 animate-pulse [animation-delay:150ms]" />
+            <div className="w-1.5 h-7 rounded-full bg-red-400/60 animate-pulse [animation-delay:300ms]" />
           </div>
-          <p className="text-sm text-[#a1a1aa]">Carregando...</p>
+          <p className="text-xs text-[#555b66] font-medium tracking-wide">Carregando</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#0b0c10]">
+    <div className="min-h-screen bg-[#0c0d11]">
       <Sidebar />
-      <main 
-        className={`min-h-screen transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'ml-20' : 'ml-64'
-        }`}
-      >
+      <main className="ml-[252px] min-h-screen">
         {children}
       </main>
     </div>
-  );
-}
-
-export function DashboardLayout({ children }: DashboardLayoutProps) {
-  return (
-    <SidebarProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </SidebarProvider>
   );
 }
