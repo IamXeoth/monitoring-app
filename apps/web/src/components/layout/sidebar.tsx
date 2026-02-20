@@ -3,12 +3,42 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { useState, useRef, useEffect } from 'react';
 
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const notifBtnRef = useRef<HTMLButtonElement>(null);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  // Close notifications dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        showNotifications &&
+        notifRef.current &&
+        !notifRef.current.contains(e.target as Node) &&
+        notifBtnRef.current &&
+        !notifBtnRef.current.contains(e.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showNotifications]);
+
+  // TODO: Replace with real notification data from API
+  const notifications = [
+    // Example structure:
+    // { id: '1', type: 'down', monitor: 'API Server', message: 'Monitor offline', time: new Date(), read: false },
+    // { id: '2', type: 'up', monitor: 'API Server', message: 'Monitor recuperado', time: new Date(), read: true },
+  ] as { id: string; type: 'down' | 'up' | 'info'; monitor: string; message: string; time: Date; read: boolean }[];
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const navigation = [
     {
@@ -69,7 +99,6 @@ export function Sidebar() {
 
   const planLabel = user?.subscription?.plan || 'FREE';
 
-  /* Shared nav item style */
   const navItemClass = (active: boolean) =>
     `group flex items-center gap-3 px-3 py-[9px] rounded-lg text-[13px] font-medium transition-all duration-150 ${
       active
@@ -79,6 +108,16 @@ export function Sidebar() {
 
   const iconClass = (active: boolean) =>
     `transition-colors duration-150 ${active ? 'text-[#e4e4e7]' : 'text-[#3a3f4a] group-hover:text-[#5c6370]'}`;
+
+  const formatTimeAgo = (date: Date) => {
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'agora';
+    if (mins < 60) return `${mins}min`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h`;
+    return `${Math.floor(hours / 24)}d`;
+  };
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[252px] bg-[#101218] flex flex-col z-30">
@@ -99,9 +138,7 @@ export function Sidebar() {
 
       {/* ─── Section: Menu ─── */}
       <div className="px-6 mb-2">
-        <p className="text-[10px] font-semibold text-[#2e323a] uppercase tracking-[0.1em]">
-          Menu
-        </p>
+        <p className="text-[10px] font-semibold text-[#2e323a] uppercase tracking-[0.1em]">Menu</p>
       </div>
 
       <nav className="px-5 space-y-0.5">
@@ -118,9 +155,7 @@ export function Sidebar() {
 
       {/* ─── Section: Equipe ─── */}
       <div className="mt-8 px-6 mb-2">
-        <p className="text-[10px] font-semibold text-[#2e323a] uppercase tracking-[0.1em]">
-          Equipe
-        </p>
+        <p className="text-[10px] font-semibold text-[#2e323a] uppercase tracking-[0.1em]">Equipe</p>
       </div>
 
       <div className="px-5">
@@ -130,7 +165,6 @@ export function Sidebar() {
           </svg>
           Convidar membro
         </button>
-        {/* Future: team member avatars will appear here */}
       </div>
 
       {/* ─── Spacer ─── */}
@@ -147,9 +181,104 @@ export function Sidebar() {
           Configurações
         </Link>
 
+        {/* Notifications */}
+        <div className="relative">
+          <button
+            ref={notifBtnRef}
+            onClick={() => setShowNotifications(!showNotifications)}
+            className={`w-full group flex items-center gap-3 px-3 py-[9px] rounded-lg text-[13px] font-medium transition-all duration-150 ${
+              showNotifications
+                ? 'bg-white/[0.07] text-[#e4e4e7]'
+                : 'text-[#5c6370] hover:text-[#b0b3ba] hover:bg-white/[0.03]'
+            }`}
+          >
+            <span className={`transition-colors duration-150 ${
+              showNotifications ? 'text-[#e4e4e7]' : 'text-[#3a3f4a] group-hover:text-[#5c6370]'
+            }`}>
+              <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </span>
+            Notificações
+            {/* Badge */}
+            {unreadCount > 0 && (
+              <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500/20 text-[10px] font-bold text-red-400 tabular-nums">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Notifications Dropdown */}
+          {showNotifications && (
+            <div
+              ref={notifRef}
+              className="absolute bottom-full left-0 mb-2 w-[280px] bg-[#14161c] border border-[#1e2128] rounded-xl overflow-hidden"
+              style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+            >
+              {/* Header */}
+              <div className="px-4 py-3 border-b border-[#1e2128]">
+                <p className="text-[13px] font-semibold text-[#e4e4e7]">Notificações</p>
+              </div>
+
+              {/* List */}
+              <div className="max-h-[260px] overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 px-4">
+                    <div className="w-9 h-9 rounded-full bg-[#1e2128] flex items-center justify-center mb-3">
+                      <svg className="w-4.5 h-4.5 text-[#3a3f4a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    </div>
+                    <p className="text-[12px] text-[#555b66] font-medium">Nenhuma notificação</p>
+                    <p className="text-[10px] text-[#2e323a] mt-1">Você será notificado sobre alertas aqui</p>
+                  </div>
+                ) : (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`flex items-start gap-3 px-4 py-3 border-b border-[#1e2128]/50 hover:bg-white/[0.02] transition-colors ${
+                        !notif.read ? 'bg-white/[0.01]' : ''
+                      }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        notif.type === 'down' ? 'bg-red-400' : notif.type === 'up' ? 'bg-emerald-400' : 'bg-[#555b66]'
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] text-[#c8c9cd] font-medium leading-tight">
+                          {notif.message}
+                        </p>
+                        <p className="text-[10px] text-[#3e424a] mt-0.5">{notif.monitor}</p>
+                      </div>
+                      <span className="text-[10px] text-[#3e424a] font-medium flex-shrink-0 mt-0.5 tabular-nums">
+                        {formatTimeAgo(notif.time)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-4 py-2.5 border-t border-[#1e2128] flex items-center justify-between">
+                <Link
+                  href="/settings/notifications"
+                  onClick={() => setShowNotifications(false)}
+                  className="text-[11px] font-medium text-[#555b66] hover:text-[#b0b3ba] transition-colors"
+                >
+                  Configurar alertas
+                </Link>
+                {notifications.length > 0 && (
+                  <button className="text-[11px] font-medium text-[#555b66] hover:text-[#b0b3ba] transition-colors">
+                    Marcar como lidas
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Help */}
-        <Link href="/help" className={navItemClass(false)}>
-          <svg className={`w-[18px] h-[18px] ${iconClass(false)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+        <Link href="/help" className={navItemClass(isActive('/help'))}>
+          <svg className={`w-[18px] h-[18px] ${iconClass(isActive('/help'))}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Central de ajuda

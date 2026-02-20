@@ -16,6 +16,7 @@ export interface MonitorAlertEmail {
 }
 
 export interface DailyReportEmail {
+  userName: string;
   date: Date;
   totalMonitors: number;
   upMonitors: number;
@@ -26,6 +27,6 @@ export interface DailyReportEmail {
     url: string;
     uptime: number;
     avgResponseTime: number;
-    status: 'UP' | 'DOWN';
+    status?: 'UP' | 'DOWN';
   }[];
 }

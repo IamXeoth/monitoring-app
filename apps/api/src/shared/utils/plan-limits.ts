@@ -7,7 +7,7 @@ export interface PlanLimits {
   hasSmsAlerts: boolean;
   hasSlackIntegration: boolean;
   hasDailyReport: boolean;
-  retentionDays: number; // dias de retenção de histórico
+  retentionDays: number;
 }
 
 const PLAN_LIMITS: Record<string, PlanLimits> = {
@@ -23,7 +23,7 @@ const PLAN_LIMITS: Record<string, PlanLimits> = {
   },
   STARTER: {
     maxMonitors: 10,
-    minInterval: 120, // 2 minutos
+    minInterval: 60, // 1 minuto
     maxTeamMembers: 3,
     hasEmailAlerts: true,
     hasSmsAlerts: false,
@@ -33,7 +33,7 @@ const PLAN_LIMITS: Record<string, PlanLimits> = {
   },
   PRO: {
     maxMonitors: 30,
-    minInterval: 60, // 1 minuto
+    minInterval: 30, // 30 segundos
     maxTeamMembers: 10,
     hasEmailAlerts: true,
     hasSmsAlerts: true,
@@ -41,15 +41,15 @@ const PLAN_LIMITS: Record<string, PlanLimits> = {
     hasDailyReport: true,
     retentionDays: 90,
   },
-  BUSINESS: {
-    maxMonitors: 100,
-    minInterval: 30, // 30 segundos
-    maxTeamMembers: 50,
+  ENTERPRISE: {
+    maxMonitors: -1, // ilimitado
+    minInterval: 10, // adaptável, mínimo 10s
+    maxTeamMembers: -1, // ilimitado
     hasEmailAlerts: true,
     hasSmsAlerts: true,
     hasSlackIntegration: true,
     hasDailyReport: true,
-    retentionDays: 365,
+    retentionDays: 730,
   },
 };
 
@@ -73,6 +73,7 @@ export function validateInterval(plan: string, interval: number): boolean {
  */
 export function canCreateMonitor(plan: string, currentCount: number): boolean {
   const limits = getPlanLimits(plan);
+  if (limits.maxMonitors === -1) return true;
   return currentCount < limits.maxMonitors;
 }
 
@@ -84,7 +85,7 @@ export function getPlanDisplayName(plan: string): string {
     FREE: 'Gratuito',
     STARTER: 'Starter',
     PRO: 'Pro',
-    BUSINESS: 'Business',
+    ENTERPRISE: 'Enterprise',
   };
   return names[plan] || 'Gratuito';
 }

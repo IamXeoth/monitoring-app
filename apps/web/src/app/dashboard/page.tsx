@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { MonitorForm } from '@/components/monitor-form';
@@ -255,6 +256,7 @@ function StatusTag({ status, isActive }: { status?: string; isActive: boolean })
 /* ─── Main Dashboard ─── */
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -269,6 +271,7 @@ export default function DashboardPage() {
   const [showBulkMenu, setShowBulkMenu] = useState(false);
   const [bulkMenuPosition, setBulkMenuPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [refreshing, setRefreshing] = useState(false);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     if (user) loadMonitors();
@@ -279,6 +282,30 @@ export default function DashboardPage() {
     const interval = setInterval(loadMonitors, 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  // Tick every second to update countdown + auto-refresh when it hits 0
+  const lastAutoRefresh = useRef(0);
+  useEffect(() => {
+    const ticker = setInterval(() => {
+      setTick((t) => t + 1);
+      // Check if any monitor countdown reached 0
+      const now = Date.now();
+      let soonest = Infinity;
+      monitors.forEach((m) => {
+        if (!m.isActive) return;
+        const lastChecked = m.lastChecked ? new Date(m.lastChecked).getTime() : 0;
+        const nextAt = lastChecked + (m.interval * 1000);
+        const remaining = nextAt - now;
+        if (remaining < soonest) soonest = remaining;
+      });
+      // Auto-refresh when countdown hits 0, but not more than once every 10s
+      if (soonest <= 0 && now - lastAutoRefresh.current > 10000 && monitors.length > 0) {
+        lastAutoRefresh.current = now;
+        loadMonitors();
+      }
+    }, 1000);
+    return () => clearInterval(ticker);
+  }, [monitors]);
 
   const loadMonitors = async () => {
     try {
@@ -672,7 +699,8 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={monitor.id}
-                        className={`group relative flex items-center gap-5 px-5 py-[14px] transition-colors duration-100 hover:bg-[#15171c] ${
+                        onClick={() => router.push(`/monitors/${monitor.id}`)}
+                        className={`group relative flex items-center gap-5 px-5 py-[14px] transition-colors duration-100 hover:bg-[#15171c] cursor-pointer ${
                           !isLast ? 'border-b border-[#1e2128]/70' : ''
                         } ${isFirst ? 'rounded-t-xl' : ''} ${isLast ? 'rounded-b-xl' : ''} ${
                           monitor.currentStatus === 'DOWN' ? 'bg-red-500/[0.02]' : 'bg-[#12141a]'
@@ -765,6 +793,7 @@ export default function DashboardPage() {
                         <div className="flex-shrink-0">
                           <button
                             onClick={(e) => {
+                              e.stopPropagation();
                               if (openMonitorMenu === monitor.id) {
                                 setOpenMonitorMenu(null);
                               } else {
@@ -1141,9 +1170,60 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </div>
-            </div>
 
-            {/* Last 24h */}
+              {/* Next check countdown */}
+              {monitors.length > 0 && (() => {
+                const now = Date.now();
+                let soonest = Infinity;
+                let intervalSecs = 300;
+                monitors.forEach((m) => {
+                  if (!m.isActive) return;
+                  const lastChecked = m.lastChecked ? new Date(m.lastChecked).getTime() : 0;
+                  const nextAt = lastChecked + (m.interval * 1000);
+                  const remaining = nextAt - now;
+                  if (remaining < soonest) {
+                    soonest = remaining;
+                    intervalSecs = m.interval;
+                  }
+                });
+
+                const secs = Math.max(0, Math.ceil(soonest / 1000));
+                const isChecking = secs === 0;
+                const progress = Math.max(0, Math.min(100, ((intervalSecs - secs) / intervalSecs) * 100));
+                
+                return (
+                  <div className="mt-4 pt-3 border-t border-[#1e2128]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-[#3e424a] font-medium">Próxima verificação</span>
+                      {isChecking ? (
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-3 h-3 text-emerald-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span className="text-[11px] font-bold text-emerald-400">Verificando</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-1 h-1 rounded-full ${secs <= 15 ? 'bg-emerald-400 animate-pulse' : 'bg-[#3e424a]'}`} />
+                          <span className={`text-[11px] font-bold tabular-nums ${secs <= 15 ? 'text-emerald-400' : 'text-[#555b66]'}`}>
+                            ~{secs > 60 ? `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s` : `${secs}s`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-2 w-full h-[3px] bg-[#1e2128] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                          isChecking ? 'bg-emerald-400/80 animate-pulse' : secs <= 15 ? 'bg-emerald-400/50' : 'bg-[#2e323a]'
+                        }`}
+                        style={{ width: `${isChecking ? 100 : progress}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
             <div className="rounded-xl border border-[#1e2128] bg-[#12141a] p-5">
               <p className="text-[11px] font-semibold text-[#3e424a] uppercase tracking-[0.08em] mb-4">
                 Últimas 24 horas
@@ -1320,7 +1400,7 @@ export default function DashboardPage() {
               {/* Clonar */}
               <button
                 onClick={() => {
-                  handleCreateMonitor({ name: `${monitor.name} (cópia)`, url: monitor.url, checkType: monitor.checkType, interval: monitor.interval, isActive: true });
+                  handleCreateMonitor({ name: `${monitor.name} (cópia)`, url: monitor.url, type: monitor.checkType, interval: monitor.interval, isActive: true });
                   setOpenMonitorMenu(null);
                 }}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-[12px] font-medium text-[#c8c9cd] hover:bg-[#1e2128] transition-colors"
