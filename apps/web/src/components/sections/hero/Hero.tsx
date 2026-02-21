@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/animations/FadeIn";
-import { LogoHero } from "./LogoHero";
 
 export function Hero() {
   return (
@@ -24,15 +23,8 @@ export function Hero() {
               </Link>
             </FadeIn>
 
-            {/* Logo Hero - Animado (alinhado com headline) */}
-            <FadeIn delay={200}>
-              <div className="mb-8">
-                <LogoHero />
-              </div>
-            </FadeIn>
-
             {/* Main Heading */}
-            <FadeIn delay={300}>
+            <FadeIn delay={200}>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.1] tracking-tight text-slate-900 mb-6 max-w-4xl">
                 Monitore seus sites
                 <br />
@@ -41,7 +33,7 @@ export function Hero() {
             </FadeIn>
 
             {/* Description */}
-            <FadeIn delay={450}>
+            <FadeIn delay={350}>
               <p className="text-base leading-relaxed text-slate-600 max-w-[500px] mb-8 font-normal">
                 A plataforma completa de monitoramento
                 de uptime feita para empresas que valorizam
@@ -50,7 +42,7 @@ export function Hero() {
             </FadeIn>
 
             {/* CTA Buttons */}
-            <FadeIn delay={600}>
+            <FadeIn delay={500}>
               <div className="flex items-center gap-4 mb-6">
                 {/* Primary CTA */}
                 <Link href="/register">
@@ -72,7 +64,7 @@ export function Hero() {
             </FadeIn>
 
             {/* Social Proof */}
-            <FadeIn delay={750}>
+            <FadeIn delay={650}>
               <Link href="#about" className="inline-flex items-center gap-2 group cursor-pointer">
                 <span className="text-sm font-medium text-slate-700">
                   Feito por brasileiros, para brasileiros
@@ -83,7 +75,7 @@ export function Hero() {
           </div>
 
           {/* Right Column - Dashboard Preview */}
-          <FadeIn delay={600} direction="left">
+          <FadeIn delay={500} direction="left">
             <div className="relative">
               <div className="w-full h-[500px] bg-slate-100 rounded-3xl border-2 border-slate-200 flex items-center justify-center">
                 <div className="text-center">
