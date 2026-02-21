@@ -6,6 +6,7 @@ import { monitorsRoutes } from './modules/monitors/monitors.routes';
 import { checkingRoutes } from './modules/monitors/checking.routes';
 import { startCheckingScheduler } from './modules/monitors/checking.queue';
 import { prisma } from './shared/database/prisma';
+import { statusPagesRoutes } from './modules/status-pages/status-pages.routes';
 
 // Adicionar prisma ao Fastify
 declare module 'fastify' {
@@ -42,6 +43,7 @@ const initializeServer = async () => {
   await fastify.register(authRoutes);
   await fastify.register(monitorsRoutes);
   await fastify.register(checkingRoutes);
+  await fastify.register(statusPagesRoutes);
 
   // Iniciar scheduler de checking
   startCheckingScheduler();

@@ -15,6 +15,7 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   monitors     Monitor[]
+  statusPages  StatusPage[]
   subscription Subscription?
 
   @@map("users")
@@ -33,21 +34,22 @@ model Subscription {
 }
 
 model Monitor {
-  id          String         @id @default(cuid())
+  id          String              @id @default(cuid())
   userId      String
   name        String
   url         String
-  checkType   MonitorType    @map("type")
+  checkType   MonitorType         @map("type")
   interval    Int
-  isActive    Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  timeout     Int            @default(30)
-  status      IncidentStatus @default(UP)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  timeout     Int                 @default(30)
+  status      IncidentStatus      @default(UP)
   lastChecked DateTime?
   checks      Check[]
   incidents   Incident[]
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statusPages StatusPageMonitor[]
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("monitors")
@@ -81,6 +83,38 @@ model Incident {
 
   @@index([monitorId, startedAt])
   @@map("incidents")
+}
+
+model StatusPage {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String
+  slug        String  @unique
+  description String?
+  logoUrl     String?
+  isPublished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monitors StatusPageMonitor[]
+
+  @@map("status_pages")
+}
+
+model StatusPageMonitor {
+  id           String @id @default(cuid())
+  statusPageId String
+  monitorId    String
+  displayName  String
+  displayOrder Int    @default(0)
+
+  statusPage StatusPage @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  monitor    Monitor    @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@unique([statusPageId, monitorId])
+  @@map("status_page_monitors")
 }
 
 enum Plan {
