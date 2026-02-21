@@ -34,6 +34,9 @@ export default function StatusPagesPage() {
   const [editingPage, setEditingPage] = useState<StatusPage | undefined>();
 
   const plan = user?.subscription?.plan || 'FREE';
+  const maxPages: Record<string, number> = { FREE: 1, STARTER: 3, PRO: 10, BUSINESS: 50 };
+  const limit = maxPages[plan] || 1;
+  const canCreate = pages.length < limit;
 
   useEffect(() => {
     if (user) loadData();
@@ -92,7 +95,9 @@ export default function StatusPagesPage() {
             </div>
             <button
               onClick={() => { setEditingPage(undefined); setShowCreateModal(true); }}
-              className="inline-flex items-center gap-2 h-9 px-4 bg-[#e4e4e7] hover:bg-white text-[#0c0d11] rounded-lg text-[13px] font-semibold transition-all"
+              disabled={!canCreate}
+              className="inline-flex items-center gap-2 h-9 px-4 bg-[#e4e4e7] hover:bg-white text-[#0c0d11] rounded-lg text-[13px] font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              title={!canCreate ? `Limite de ${limit} status page${limit > 1 ? 's' : ''} no plano ${plan}` : ''}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -103,6 +108,18 @@ export default function StatusPagesPage() {
         </div>
 
         <div className="px-8 pb-8">
+          {/* Plan limit warning */}
+          {!canCreate && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/[0.04] border border-amber-500/10 mb-5">
+              <svg className="w-4 h-4 text-amber-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p className="text-[12px] text-[#80838a]">
+                Você atingiu o limite de <span className="font-semibold text-amber-400">{limit} status page{limit > 1 ? 's' : ''}</span> do plano {plan}.{' '}
+                <span className="text-emerald-400/60 hover:text-emerald-400 cursor-pointer transition-colors font-medium">Fazer upgrade</span>
+              </p>
+            </div>
+          )}
           {pages.length === 0 ? (
             <div className="rounded-xl border border-[#1e2128] bg-[#12141a] py-20 text-center">
               <div className="w-12 h-12 rounded-full bg-[#1e2128] flex items-center justify-center mx-auto mb-4">
