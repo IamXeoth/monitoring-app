@@ -260,7 +260,7 @@ export function Sidebar() {
               {/* Footer */}
               <div className="px-4 py-2.5 border-t border-[#1e2128] flex items-center justify-between">
                 <Link
-                  href="/settings/notifications"
+                  href="/notifications"
                   onClick={() => setShowNotifications(false)}
                   className="text-[11px] font-medium text-[#555b66] hover:text-[#b0b3ba] transition-colors"
                 >
