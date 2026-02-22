@@ -9,8 +9,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
-  const notifRef = useRef<HTMLDivElement>(null);
-  const notifBtnRef = useRef<HTMLButtonElement>(null);
+  const notifWrapperRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -19,10 +18,8 @@ export function Sidebar() {
     const handleClick = (e: MouseEvent) => {
       if (
         showNotifications &&
-        notifRef.current &&
-        !notifRef.current.contains(e.target as Node) &&
-        notifBtnRef.current &&
-        !notifBtnRef.current.contains(e.target as Node)
+        notifWrapperRef.current &&
+        !notifWrapperRef.current.contains(e.target as Node)
       ) {
         setShowNotifications(false);
       }
@@ -32,12 +29,7 @@ export function Sidebar() {
   }, [showNotifications]);
 
   // TODO: Replace with real notification data from API
-  const notifications = [
-    // Example structure:
-    // { id: '1', type: 'down', monitor: 'API Server', message: 'Monitor offline', time: new Date(), read: false },
-    // { id: '2', type: 'up', monitor: 'API Server', message: 'Monitor recuperado', time: new Date(), read: true },
-  ] as { id: string; type: 'down' | 'up' | 'info'; monitor: string; message: string; time: Date; read: boolean }[];
-
+  const notifications = [] as { id: string; type: 'down' | 'up' | 'info'; monitor: string; message: string; time: Date; read: boolean }[];
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const navigation = [
@@ -98,6 +90,7 @@ export function Sidebar() {
   ];
 
   const planLabel = user?.subscription?.plan || 'FREE';
+  const userInitials = (user?.name || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   const navItemClass = (active: boolean) =>
     `group flex items-center gap-3 px-3 py-[9px] rounded-lg text-[13px] font-medium transition-all duration-150 ${
@@ -155,16 +148,35 @@ export function Sidebar() {
 
       {/* ─── Section: Equipe ─── */}
       <div className="mt-8 px-6 mb-2">
-        <p className="text-[10px] font-semibold text-[#2e323a] uppercase tracking-[0.1em]">Equipe</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold text-[#2e323a] uppercase tracking-[0.1em]">Equipe</p>
+          <Link href="/team" className="text-[10px] text-[#2e323a] hover:text-[#555b66] transition-colors">
+            Gerenciar
+          </Link>
+        </div>
       </div>
 
-      <div className="px-5">
-        <button className="w-full flex items-center gap-3 px-3 py-[9px] rounded-lg text-[13px] font-medium text-[#5c6370] hover:text-[#b0b3ba] hover:bg-white/[0.03] transition-all duration-150">
-          <svg className="w-[18px] h-[18px] text-[#3a3f4a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+      <div className="px-5 space-y-0.5">
+        {/* Current user avatar + name */}
+        <div className="flex items-center gap-3 px-3 py-[7px] rounded-lg">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-[8px] font-bold text-emerald-400">{userInitials}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium text-[#80838a] truncate">{user?.name || 'Usuário'}</p>
+          </div>
+          <span className="text-[8px] font-bold text-amber-400/40 uppercase">Dono</span>
+        </div>
+
+        {/* Invite member → /team */}
+        <Link href="/team" className="w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[11px] font-medium text-[#3e424a] hover:text-[#5c6370] hover:bg-white/[0.03] transition-all duration-150">
+          <div className="w-6 h-6 rounded-full border border-dashed border-[#2e323a] flex items-center justify-center flex-shrink-0">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
           Convidar membro
-        </button>
+        </Link>
       </div>
 
       {/* ─── Spacer ─── */}
@@ -172,7 +184,7 @@ export function Sidebar() {
 
       {/* ─── Bottom ─── */}
       <div className="px-5 pb-3 space-y-0.5">
-        {/* Settings */}
+        {/* Settings → /settings */}
         <Link href="/settings" className={navItemClass(isActive('/settings'))}>
           <svg className={`w-[18px] h-[18px] ${iconClass(isActive('/settings'))}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -181,26 +193,24 @@ export function Sidebar() {
           Configurações
         </Link>
 
-        {/* Notifications */}
-        <div className="relative">
+        {/* Notifications → dropdown + /notifications */}
+        <div className="relative" ref={notifWrapperRef}>
           <button
-            ref={notifBtnRef}
             onClick={() => setShowNotifications(!showNotifications)}
             className={`w-full group flex items-center gap-3 px-3 py-[9px] rounded-lg text-[13px] font-medium transition-all duration-150 ${
-              showNotifications
+              showNotifications || isActive('/notifications')
                 ? 'bg-white/[0.07] text-[#e4e4e7]'
                 : 'text-[#5c6370] hover:text-[#b0b3ba] hover:bg-white/[0.03]'
             }`}
           >
             <span className={`transition-colors duration-150 ${
-              showNotifications ? 'text-[#e4e4e7]' : 'text-[#3a3f4a] group-hover:text-[#5c6370]'
+              showNotifications || isActive('/notifications') ? 'text-[#e4e4e7]' : 'text-[#3a3f4a] group-hover:text-[#5c6370]'
             }`}>
               <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
             </span>
             Notificações
-            {/* Badge */}
             {unreadCount > 0 && (
               <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500/20 text-[10px] font-bold text-red-400 tabular-nums">
                 {unreadCount}
@@ -211,21 +221,17 @@ export function Sidebar() {
           {/* Notifications Dropdown */}
           {showNotifications && (
             <div
-              ref={notifRef}
               className="absolute bottom-full left-0 mb-2 w-[280px] bg-[#14161c] border border-[#1e2128] rounded-xl overflow-hidden"
               style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
             >
-              {/* Header */}
               <div className="px-4 py-3 border-b border-[#1e2128]">
                 <p className="text-[13px] font-semibold text-[#e4e4e7]">Notificações</p>
               </div>
-
-              {/* List */}
               <div className="max-h-[260px] overflow-y-auto">
                 {notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 px-4">
                     <div className="w-9 h-9 rounded-full bg-[#1e2128] flex items-center justify-center mb-3">
-                      <svg className="w-4.5 h-4.5 text-[#3a3f4a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                      <svg className="w-4 h-4 text-[#3a3f4a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                       </svg>
                     </div>
@@ -244,9 +250,7 @@ export function Sidebar() {
                         notif.type === 'down' ? 'bg-red-400' : notif.type === 'up' ? 'bg-emerald-400' : 'bg-[#555b66]'
                       }`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] text-[#c8c9cd] font-medium leading-tight">
-                          {notif.message}
-                        </p>
+                        <p className="text-[12px] text-[#c8c9cd] font-medium leading-tight">{notif.message}</p>
                         <p className="text-[10px] text-[#3e424a] mt-0.5">{notif.monitor}</p>
                       </div>
                       <span className="text-[10px] text-[#3e424a] font-medium flex-shrink-0 mt-0.5 tabular-nums">
@@ -256,15 +260,13 @@ export function Sidebar() {
                   ))
                 )}
               </div>
-
-              {/* Footer */}
               <div className="px-4 py-2.5 border-t border-[#1e2128] flex items-center justify-between">
                 <Link
                   href="/notifications"
                   onClick={() => setShowNotifications(false)}
                   className="text-[11px] font-medium text-[#555b66] hover:text-[#b0b3ba] transition-colors"
                 >
-                  Configurar alertas
+                  Ver todas
                 </Link>
                 {notifications.length > 0 && (
                   <button className="text-[11px] font-medium text-[#555b66] hover:text-[#b0b3ba] transition-colors">
@@ -276,7 +278,7 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* Help */}
+        {/* Help → /help */}
         <Link href="/help" className={navItemClass(isActive('/help'))}>
           <svg className={`w-[18px] h-[18px] ${iconClass(isActive('/help'))}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -316,9 +318,9 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Upgrade CTA */}
+        {/* Upgrade CTA → /upgrade */}
         {planLabel === 'FREE' && (
-          <Link href="/pricing">
+          <Link href="/upgrade">
             <div className="mt-1.5 px-3 py-3 rounded-lg bg-gradient-to-r from-emerald-500/[0.08] to-emerald-500/[0.03] border border-emerald-500/[0.08] hover:border-emerald-500/20 transition-all cursor-pointer group">
               <div className="flex items-center justify-between">
                 <div>
