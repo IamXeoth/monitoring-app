@@ -239,7 +239,7 @@ function StatusTag({ status, isActive }: { status?: string; isActive: boolean })
   }
   if (status === 'UP') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/8 text-[11px] font-medium text-emerald-400 tracking-wide uppercase">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/[0.08] text-[11px] font-medium text-emerald-400 tracking-wide uppercase">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
         Online
       </span>
@@ -255,7 +255,7 @@ function StatusTag({ status, isActive }: { status?: string; isActive: boolean })
 
 /* ─── Main Dashboard ─── */
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1301,7 +1301,7 @@ export default function DashboardPage() {
 
             {/* Upgrade card for FREE */}
             {(user?.subscription?.plan || 'FREE') === 'FREE' && (
-              <Link href="/pricing">
+              <Link href="/upgrade">
                 <div className="rounded-xl border border-[#1e2128] bg-gradient-to-b from-[#14161c] to-[#12141a] p-5 hover:border-[#2a2e36] transition-colors cursor-pointer group">
                   <div className="flex items-center gap-2 mb-2.5">
                     <div className="flex items-center gap-[3px]">
